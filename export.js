@@ -1,10 +1,10 @@
-
 class ExportCSV {
     constructor(properties = {}) {
         this.export_button;
-        this.select_list;
-        this.path = '/purchases/export';
-        this.notyf = false;
+        this.select_list;    
+        this.path;
+        this.file_name = 'table.csv';
+        this.notyf;
 
         for (const key in properties) { 
             if(properties.hasOwnProperty(key)) this[key] = properties[key];
@@ -42,7 +42,7 @@ class ExportCSV {
 
     async get_file(data) {
         try {
-            const response = await fetch(this.path, {
+            const response = await fetch('/purchases/export', {
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify(data)
@@ -58,7 +58,7 @@ class ExportCSV {
 
             if (responseData.success) {
                 const csvData = this.jsonToCsv(responseData.file); // assuming result.file contains the JSON data
-                this.download(csvData, 'sales.csv');
+                this.download(csvData, this.file_name);
             } else {
                 if(responseData.relog) window.location = '/signin'; 
                 if(responseData.error) this.notyf.error(responseData.error);
@@ -71,16 +71,13 @@ class ExportCSV {
     listen() {
         let self = this;
         self.export_button.addEventListener('click', async function () {
-            let data = { uuid: self.select_list.value }; 
+            const req = self.select_list ? self.select_list.value : 0;
+            let data = { uuid: req }; 
             await self.get_file(data);
         });
     }
 
     init() {
-        this.select_list = document.getElementById("vendor_owners");
-        this.export_button = document.getElementById("Export");
-
         this.listen();
     }   
-
 }
